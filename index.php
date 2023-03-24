@@ -22,38 +22,28 @@ $tree = [
 	[ 'id' => '7', 'parent_id' => '3', ],
 ];
 
-$mapping = [];
-
-foreach ($tree as &$n) {
-    $mapping[(int)$n['parent_id']][] = &$n;
+$parents = [];
+foreach ($tree as $node) {
+	$parents[$node['parent_id']][] = $node['id'];
 }
 
-foreach ($tree as &$n) {
-    $n['visited'] = false;
-    if (isset($mapping[$n['id']])) {
-        $n['children'] = $mapping[$n['id']];
-    }
-}
-
-$str = [];
-$stack = [$mapping[0][0]];
+$back = false;
+$firstId = array_shift($parents[0]);
+$stack = [$firstId];
 while (!empty($stack)) {
-    $node = &$stack[count($stack) - 1];
+    $id = $stack[count($stack) - 1];
 
-    if ($node['visited'] === true) {
-        array_pop($stack);
-        array_pop($str);
-        continue;
+    if ($back === false) {
+    	echo implode('.',$stack).PHP_EOL;
     }
-    $node['visited'] = true;
- 
-    $str[] = $node['id'];
-    echo implode('.',$str).PHP_EOL;
-    
-    if (isset($node['children'])) {
-        for ($i = count($node['children']) - 1; $i >= 0; $i--) {
-            array_push($stack, $node['children'][$i]);
-        }
+
+    if (isset($parents[$id]) && count($parents[$id]) > 0) {
+    	$nextId = array_shift($parents[$id]);
+    	array_push($stack, $nextId);
+    	$back = false;
+    } else {
+    	array_pop($stack);
+    	$back = true;
     }
 }
 
